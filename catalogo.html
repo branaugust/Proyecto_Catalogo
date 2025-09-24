@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Ropa Deportiva</title>
+    <!-- Incluir Tailwind CSS para un estilo rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Usar una fuente moderna de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Estilos para el modal de la descripción */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: 15% auto;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            animation: fadeIn 0.3s ease-out;
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1;
+            padding: 0 8px;
+            border-radius: 50%;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <header class="bg-white py-8 shadow-md">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl font-extrabold text-blue-600">Catálogo de Ropa Deportiva</h1>
+            <p class="text-xl mt-2 text-gray-600">Encuentra los diseños más frescos y cómodos para tu estilo de vida activo.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-8">
+        <!-- El catálogo se generará aquí automáticamente con JavaScript -->
+        <div id="productos-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-8">
+            <!-- Los productos se insertarán aquí -->
+        </div>
+    </main>
+
+    <!-- Modal para mostrar la descripción generada -->
+    <div id="description-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">Descripción Generada ✨</h2>
+            <p id="modal-text" class="text-gray-700 leading-relaxed"></p>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeModal()" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-blue-700 transition-colors">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Define la lista de productos. ¡Este es el único lugar que necesitas editar!
+        // Simplemente cambia los datos de los productos para actualizar el catálogo.
+        const productos = [
+            {
+                id: 1,
+                nombre: "Leggings de Compresión 'Zenith'",
+                precio: "S/ 85.00",
+                imagen: "https://placehold.co/400x400/1e40af/ffffff?text=Producto+1",
+                disponible: true
+            },
+            {
+                id: 2,
+                nombre: "Top Deportivo 'Vanguard'",
+                precio: "S/ 60.00",
+                imagen: "https://placehold.co/400x400/059669/ffffff?text=Producto+2",
+                disponible: true
+            },
+            {
+                id: 3,
+                nombre: "Chaqueta Cortavientos 'Nimbus'",
+                precio: "S/ 120.00",
+                imagen: "https://placehold.co/400x400/9d174d/ffffff?text=Producto+3",
+                disponible: false
+            },
+            {
+                id: 4,
+                nombre: "Pantalones 'Ascend'",
+                precio: "S/ 95.00",
+                imagen: "https://placehold.co/400x400/ca8a04/ffffff?text=Producto+4",
+                disponible: true
+            },
+            {
+                id: 5,
+                nombre: "Polera 'Velocity'",
+                precio: "S/ 75.00",
+                imagen: "https://placehold.co/400x400/be123c/ffffff?text=Producto+5",
+                disponible: true
+            },
+            {
+                id: 6,
+                nombre: "Shorts 'Flow'",
+                precio: "S/ 50.00",
+                imagen: "https://placehold.co/400x400/5b21b6/ffffff?text=Producto+6",
+                disponible: true
+            },
+            {
+                id: 7,
+                nombre: "Camiseta 'Ignite'",
+                precio: "S/ 45.00",
+                imagen: "https://placehold.co/400x400/166534/ffffff?text=Producto+7",
+                disponible: true
+            },
+            {
+                id: 8,
+                nombre: "Conjunto 'Aura'",
+                precio: "S/ 150.00",
+                imagen: "https://placehold.co/400x400/0369a1/ffffff?text=Producto+8",
+                disponible: false
+            }
+        ];
+
+        // Variables de la API de Gemini
+        const apiKey = ""; // La clave de la API será proporcionada automáticamente en el entorno de ejecución
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        // Función para mostrar los productos en la página
+        function mostrarProductos() {
+            const gridContainer = document.getElementById('productos-grid');
+            gridContainer.innerHTML = ''; // Limpiar el contenedor
+            
+            productos.forEach(producto => {
+                const productoCard = `
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
+                        <!-- Imagen del producto -->
+                        <img src="${producto.imagen}" alt="Imagen de ${producto.nombre}" class="w-full h-64 object-cover rounded-t-xl">
+                        
+                        <div class="p-4">
+                            <!-- Nombre del producto -->
+                            <h2 class="font-bold text-xl text-gray-900">${producto.nombre}</h2>
+                            <!-- Precio -->
+                            <p class="text-xl font-semibold text-blue-600 mt-1">${producto.precio}</p>
+                            
+                            <!-- Botón para generar descripción con Gemini -->
+                            <button onclick="generarDescripcion(${producto.id})" 
+                                    class="generar-btn block w-full text-center bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full mt-4 hover:bg-gray-300 transition-colors">
+                                    Generar Descripción ✨
+                            </button>
+
+                            <!-- Botón de acción -->
+                            ${producto.disponible 
+                                ? `<a href="https://wa.me/?text=Hola%2C%20estoy%20interesado%20en%20el%20producto%3A%20${encodeURIComponent(producto.nombre)}" 
+                                   target="_blank" class="block w-full text-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full mt-2 hover:bg-blue-700 transition-colors">
+                                   Contactar
+                                   </a>`
+                                : `<button class="block w-full text-center bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full mt-2 cursor-not-allowed" disabled>
+                                   Agotado
+                                   </button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                gridContainer.innerHTML += productoCard;
+            });
+        }
+
+        // Función para generar la descripción del producto usando la API de Gemini
+        async function generarDescripcion(productoId) {
+            const producto = productos.find(p => p.id === productoId);
+            if (!producto) return;
+
+            const boton = document.querySelector(`[onclick="generarDescripcion(${productoId})"]`);
+            const textoOriginal = boton.textContent;
+            boton.textContent = 'Cargando...';
+            boton.disabled = true;
+
+            const prompt = `Genera una descripción de producto de 2-3 oraciones para el siguiente artículo de ropa deportiva: "${producto.nombre}". La descripción debe ser atractiva y destacar la comodidad, estilo y funcionalidad para un estilo de vida activo.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const generatedText = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'No se pudo generar una descripción.';
+                
+                // Mostrar la descripción en el modal
+                showModal(generatedText);
+
+            } catch (error) {
+                console.error("Error al llamar a la API de Gemini:", error);
+                showModal('Ocurrió un error al generar la descripción. Inténtalo de nuevo más tarde.');
+            } finally {
+                boton.textContent = textoOriginal;
+                boton.disabled = false;
+            }
+        }
+
+        // Funciones para manejar el modal
+        function showModal(text) {
+            const modal = document.getElementById('description-modal');
+            const modalText = document.getElementById('modal-text');
+            modalText.textContent = text;
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('description-modal');
+            modal.style.display = 'none';
+        }
+        
+        // Ejecutar la función para mostrar los productos cuando la página se carga
+        window.onload = mostrarProductos;
+
+        /*
+            *** Instrucciones para actualizar el catálogo ***
+            1. Abre este archivo con cualquier editor de texto (como el Bloc de notas).
+            2. Busca la sección de JavaScript que empieza con "const productos = [".
+            3. Para cada producto, puedes cambiar la siguiente información:
+               - nombre: el nombre del producto.
+               - precio: el precio del producto.
+               - imagen: la URL de la imagen. ¡Reemplaza la URL de "placehold.co" con tus propias fotos!
+               - disponible: cambia a `true` si está en stock o `false` si se agotó.
+            4. ¡Guarda el archivo y ya está! El catálogo se actualizará automáticamente.
+        */
+    </script>
+</body>
+</html>
