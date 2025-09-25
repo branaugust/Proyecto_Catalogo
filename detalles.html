@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Ropa Deportiva</title>
+    <title>Detalles del Producto</title>
     <!-- Incluir Tailwind CSS para un estilo rápido y moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Usar una fuente moderna de Google Fonts -->
@@ -19,22 +19,33 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <header class="bg-white py-8 shadow-md">
+    <header class="bg-white py-8 shadow-md mb-8">
         <div class="container mx-auto px-6 text-center">
-            <h1 class="text-4xl font-extrabold text-blue-600">Catálogo de Ropa Deportiva</h1>
-            <p class="text-xl mt-2 text-gray-600">Encuentra los diseños más frescos y cómodos para tu estilo de vida activo.</p>
+            <h1 id="producto-titulo" class="text-4xl font-extrabold text-blue-600"></h1>
+            <p id="producto-precio" class="text-xl mt-2 text-gray-600"></p>
         </div>
     </header>
 
     <main class="container mx-auto p-8">
-        <!-- El catálogo se generará aquí automáticamente con JavaScript -->
-        <div id="productos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-8">
-            <!-- Los productos se insertarán aquí -->
+        <div class="flex items-center justify-center mb-6">
+            <a href="index.html" class="inline-block bg-blue-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-blue-600 transition-colors">← Volver al Catálogo</a>
+        </div>
+
+        <!-- Secciones de colores y tallas se llenarán con JavaScript -->
+        <div id="colores-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
+            <!-- Los colores se insertarán aquí -->
+        </div>
+
+        <div id="tallas-container" class="mt-8">
+            <h3 class="font-bold text-xl mb-4 text-center">Tallas disponibles:</h3>
+            <div id="tallas-list" class="flex flex-wrap gap-2 justify-center">
+                <!-- Las tallas se insertarán aquí -->
+            </div>
         </div>
     </main>
 
     <script>
-        // Define la lista de productos con sets y enterizos
+        // Define la lista de productos (debe ser la misma que en index.html)
         const productos = [
             // Sets
             {
@@ -154,32 +165,66 @@
             }
         ];
 
-        // Función para mostrar los productos en la página principal
-        function mostrarProductos() {
-            const gridContainer = document.getElementById('productos-grid');
-            gridContainer.innerHTML = ''; // Limpiar el contenedor
+        // Función para obtener el ID del producto de la URL y mostrar los detalles
+        function mostrarDetalles() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productoId = urlParams.get('id');
+
+            const producto = productos.find(p => p.id === productoId);
             
-            productos.forEach(producto => {
-                const productoCard = `
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
-                        <!-- Imagen principal del producto -->
-                        <img src="${producto.imagenPrincipal}" alt="Imagen de ${producto.nombre}" class="w-full h-64 object-cover rounded-md mb-4">
-                        
-                        <h2 class="font-bold text-2xl text-gray-900 mb-2">${producto.nombre}</h2>
-                        <p class="text-xl font-semibold text-blue-600 mb-4">${producto.precio}</p>
-                        
-                        <!-- Botón para ver detalles -->
-                        <a href="detalles.html?id=${producto.id}" class="block w-full text-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition-colors">
-                            Ver Detalles
+            const mainContainer = document.querySelector('main');
+            
+            if (producto) {
+                document.getElementById('producto-titulo').textContent = producto.nombre;
+                document.getElementById('producto-precio').textContent = producto.precio;
+
+                // Mostrar tallas
+                const tallasList = document.getElementById('tallas-list');
+                producto.tallas.forEach(talla => {
+                    const span = document.createElement('span');
+                    span.className = "inline-block bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-1 rounded-full";
+                    span.textContent = talla;
+                    tallasList.appendChild(span);
+                });
+
+                // Mostrar colores y variantes
+                const coloresContainer = document.getElementById('colores-container');
+                producto.colores.forEach(color => {
+                    const estado = color.disponible ? 'Disponible' : 'Agotado';
+                    const estadoClase = color.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    const linkUrl = color.disponible ? `https://wa.me/?text=Hola%2C%20estoy%20interesado%20en%20el%20producto%3A%20${encodeURIComponent(producto.nombre)}%20en%20color%20${encodeURIComponent(color.color)}` : '#';
+
+                    const colorCard = `
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden p-4">
+                            <img src="${color.imagen}" alt="Imagen de ${producto.nombre} en color ${color.color}" class="w-full h-64 object-cover rounded-md mb-2">
+                            <h3 class="font-bold text-gray-900">${color.color}</h3>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-sm font-semibold py-1 px-2 rounded-full ${estadoClase}">${estado}</span>
+                                ${color.disponible ? 
+                                    `<a href="${linkUrl}" target="_blank" class="bg-blue-600 text-white font-semibold py-1 px-4 text-sm rounded-full hover:bg-blue-700 transition-colors">Contactar</a>` :
+                                    `<button disabled class="bg-gray-400 text-gray-800 font-semibold py-1 px-4 text-sm rounded-full cursor-not-allowed">Agotado</button>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                    coloresContainer.innerHTML += colorCard;
+                });
+            } else {
+                // Si no se encuentra el producto, muestra un mensaje de error en la pantalla
+                mainContainer.innerHTML = `
+                    <div class="text-center p-8 bg-white rounded-xl shadow-lg max-w-lg mx-auto">
+                        <h2 class="text-2xl font-bold text-red-600 mb-4">¡Producto no encontrado!</h2>
+                        <p class="text-gray-700">El producto que buscas no existe. Por favor, vuelve al catálogo principal.</p>
+                        <a href="index.html" class="inline-block bg-blue-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-blue-600 transition-colors mt-6">
+                            ← Volver al Catálogo
                         </a>
                     </div>
                 `;
-                gridContainer.innerHTML += productoCard;
-            });
+            }
         }
         
-        // Ejecutar la función para mostrar los productos cuando la página se carga
-        window.onload = mostrarProductos;
+        // Ejecutar la función para mostrar los detalles cuando la página se carga
+        window.onload = mostrarDetalles;
     </script>
 </body>
 </html>
